@@ -12,9 +12,9 @@ boot:           ld      sp, stack
                 ld      (TDRIVE), a
                 call    SELDSK
                 IFDEF   CRT
-                ld      a, 1
+                ld      a, 1            ; CON:=CRT:, all other devices TTY: (UART1)
                 ELSE
-                xor     a
+                ld      a, $40          ; LST:=CRT:, all other devices TTY:
                 ENDIF
     
                 ld      (IOBYTE),a

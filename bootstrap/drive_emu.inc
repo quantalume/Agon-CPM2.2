@@ -5,22 +5,22 @@ _sec:           dl      0
 
 _dma:           dl      0
 
-_drive_home:    or      a
+home:           or      a
                 sbc     hl, hl
                 ld      (_trk), hl
                 ret.lil
 
-_drive_trk:     ld      (_trk), bc
+settrk:         ld      (_trk), bc
                 xor     a
                 ld      (_trk+2), a
                 ret.lil
 
-_drive_sec:     ld      (_sec), bc
+setsec:         ld      (_sec), bc
                 xor     a
                 ld      (_sec+2), a
                 ret.lil
 
-_drive_dma:     ld      (_dma), bc
+setdma:         ld      (_dma), bc
                 ld      a, CPM_SEG
                 ld      (_dma+2), a
                 xor     a
@@ -39,7 +39,7 @@ _calc_offset:   ld      hl, (_trk)
                 add     hl, bc
                 ret
 
-_drive_read:    xor     a
+read:           xor     a
                 ld      mb, a
 
                 call    _calc_offset
@@ -52,7 +52,7 @@ _drive_read:    xor     a
                 xor     a
                 ret.lil
 
-_drive_write:   xor     a
+write:          xor     a
                 ld      mb, a
 
                 call    _calc_offset
@@ -72,7 +72,7 @@ drive_letter:   db      "a.dsk", 0
 
 f_handle:       db      0
 
-_drive_change:  add     a, 'a'
+seldsk:         add     a, 'a'
                 ld      (drive_letter), a
 
                 xor     a

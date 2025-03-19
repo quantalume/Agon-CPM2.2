@@ -34,7 +34,7 @@ CPM_SEG:        equ     $5
                 rst.lil $08
                 endmacro
 
-                ASSUME ADL=1
+                ASSUME  ADL=1
 
 ;; USE org $40000 for usual application
 ;; or $B0000 for MOS command
@@ -52,8 +52,7 @@ CPM_SEG:        equ     $5
                 include "devices.inc"
                 include "drive_emu.inc"
 
-_start:
-                push    ix
+_start:         push    ix
                 push    iy
 
 ;               ld      a, mos_sysvars
@@ -72,8 +71,7 @@ _start:
 sys_ix:         dl      0
 sys_iy:         dl      0
 
-_main:
-                ld      (sys_ix), ix
+_main:          ld      (sys_ix), ix
                 ld      (sys_iy), iy
 
                 xor     a
@@ -97,8 +95,7 @@ _main:
                 stmix
                 jp.sis  $DCFD
 
-_error:
-                xor     a
+_error:         xor     a
                 ld      mb, a
 
                 ld      c, 0
@@ -109,12 +106,11 @@ _error:
                 ld      bc, 0
                 rst.lil $18
                 ret
-@msg:
-                db      "Error initing OS", 13, 10
+
+@msg:           db      "Error initing OS", 13, 10
                 db      "Check system files and try again", 13, 10, 0
 
-_cpm_restore:
-                ld      hl, _cpm_image
+_cpm_restore:   ld      hl, _cpm_image
                 ld      de, $5dcfd
                 ld      bc, _cpm_end - _cpm_image
                 ldir

@@ -52,11 +52,11 @@ config_file:
 
 serial_cfg:
                 dl      57600
-                db 8
-                db 1
-                db 0
-                db 0
-                db 0
+                db      8
+                db      1
+                db      0
+                db      0
+                db      0
 serial_cfg_end:
 
 vdu_init:
@@ -66,47 +66,62 @@ vdu_init:
                 db      13,10
 init_end:
 
+const:          ld      a, (IOBYTE)
+                and     3
+                jp      z, tty_status
 
-_ser_out:
-                in0     a, (UART1_LSR)
-                and     UART_LSR_TEMT
-                jr      z, _ser_out
-
-                ld      a, c
-                out0    (UART1_THR), a
-
-                xor     a
-                ret.lil
-
-_ser_in:
-                in0     a, (UART1_LSR)
+                in0     a, (UART0_LSR)
                 and     UART_LSR_DR
-                jr      z, _ser_in
-
-                in0     a, (UART1_RBR)
-
+                ret.lil z
+                ld      a, $ff
                 ret.lil
 
-_ser_status:
-                in0     a, (UART1_LSR)
+tty_status:     in0     a, (UART1_LSR)
                 and     UART_LSR_DR
                 ret.lil z
                 ld      a, $ff
                 or      a
                 ret.lil
 
-_term_out:
-                ld      a, (IOBYTE)     ; fetch IOBYTE
+conin:          ld      a, (IOBYTE)
+                and     3
+                jp      z, tty_in
+
+crt_in:         in0     a, (UART0_LSR)  ; wait for character from VDP
+                and     UART_LSR_DR
+                jr      z, crt_in
+
+                in0     a, (UART0_RBR)
+;; ^@ fix
+                and     a
+                jr      z, crt_in
+
+; CRT character translations
+                cp      127
+                jr      nz, @f
+                ld      a, 8
+@@:
+                ret.lil
+
+tty_in:         in0     a, (UART1_LSR)
+                and     UART_LSR_DR
+                jr      z, tty_in
+
+                in0     a, (UART1_RBR)
+
+                ret.lil
+
+conout:         ld      a, (IOBYTE)     ; fetch IOBYTE
                 and     3               ; anything other than 0=TTY:?
-                jp      z, _ser_out     ; IOBYTE = 0, jump to UART1 output
-_tty_out:
-                in0     a, (PD_DR)
+                jp      z, tty_out      ; IOBYTE = 0, jump to UART1 output
+
+crt_out:        in0     a, (PD_DR)      ; wait for VDP CTS signal
                 tst     a, 8
-                jr      nz, _term_out
-@wait:
-                in0     a, (UART0_LSR)
+                jr      nz, crt_out
+
+wait_empty:     in0     a, (UART0_LSR)  ; check to see if transmit empty
                 and     UART_LSR_TEMT
-                jr      z, @wait
+                jr      z, wait_empty
 
                 ld      a, c
                 out0    (UART0_THR), a
@@ -114,36 +129,39 @@ _tty_out:
                 xor     a
                 ret.lil
 
-_term_in:
-                ld      a, (IOBYTE)
-                and     3
-                jp      z, _ser_in
-_tty_in:
-                in0     a, (UART0_LSR)
-                and     UART_LSR_DR
-                jr      z, _tty_in
-                in0     a, (UART0_RBR)
-;; ^@ fix
-                and     a
-                jr      z, _tty_in
 
-;; TTY replacements
-                cp      127
-                jr      nz, @f
-                ld      a, 8
-@@:
+tty_out:        in0     a, (UART1_LSR)
+                and     UART_LSR_TEMT
+                jr      z, tty_out
+
+
+                ld      a, c
+                out0    (UART1_THR), a
+
+                xor     a
                 ret.lil
 
-_term_status:
-                ld      a, (IOBYTE)
-                and     3
-                jp      z, _ser_status
-_tty_status:
-                in0     a, (UART0_LSR)
-                and     UART_LSR_DR
-                ret.lil z
-                ld      a, $ff
+list:           ld      a, (IOBYTE)     ; fetch IOBYTE
+                and     $C0             ; anything other than 0=TTY:?
+                jp      z, tty_out      ; IOBYTE = 0, jump to UART1 output
+                jp      crt_out
+
+punch:          xor     a
                 ret.lil
+
+reader:         xor     a
+                ret.lil
+
+listst:         xor     a
+                ret.lil
+
+
+
+
+
+
+
+
 
 
 

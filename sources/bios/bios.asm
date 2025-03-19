@@ -5,9 +5,9 @@ WBOOT:          JP      Boot.wboot
 CONST:          JP      Gate.const      ; Should call compatibility layer
 CONIN:          JP      Gate.conin
 CONOUT:         JP      Gate.conout
-LIST:           JP      nothing         ; Can be unimplemented
-PUNCH:          JP      nothing
-READER:         JP      rdr
+LIST:           JP      Gate.list         ; Can be unimplemented
+PUNCH:          JP      Gate.punch
+READER:         JP      Gate.reader
 HOME:           JP      Gate.home       ; Compatility layer
 SELDSK:         JP      seldisk
 SETTRK:         JP      Gate.settrk
@@ -15,7 +15,7 @@ SETSEC:         JP      Gate.setsec
 SETDMA:         JP      Gate.setdma
 READ:           JP      Gate.read
 WRITE:          JP      Gate.write
-PRSTAT:         JP      nothing
+LISTST:         JP      Gate.listst
 SECTRN:         JP      sectran         ;   here
 
 dbp:
@@ -137,7 +137,7 @@ seldisk:        cp      16
                 ld      sp, stack
     
                 LIL
-                call    GATE_SELECT
+                call    GATE_SELDSK
                 db      $4
 
                 ld      sp, (sp_save)
